@@ -2,6 +2,8 @@
 
 App de bolão do Campeonato Brasileiro Série A: grupos, palpites por rodada, pontuação configurável, classificação por turno e notificações push. Especificação completa em [`documento-tecnico-bolao-brasileirao.md`](./documento-tecnico-bolao-brasileirao.md).
 
+Quer publicar nas lojas (Play Store / App Store)? Veja o guia completo em [`docs/PUBLICAR.md`](./docs/PUBLICAR.md).
+
 ## Estrutura
 
 ```
