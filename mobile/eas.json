@@ -12,12 +12,15 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://cravei-production.up.railway.app"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://SUBSTITUA-PELA-URL-DO-RAILWAY.up.railway.app"
+        "EXPO_PUBLIC_API_URL": "https://cravei-production.up.railway.app"
       }
     }
   },
