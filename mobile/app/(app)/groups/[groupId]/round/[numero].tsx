@@ -87,10 +87,10 @@ export default function RoundByNumberScreen() {
 
       <FlatList
         data={round?.matches ?? []}
-        keyExtractor={(m) => m.id}
+        keyExtractor={(m: Match) => m.id}
         contentContainerStyle={{ gap: 8, paddingVertical: 12 }}
-        renderItem={({ item }) => {
-          const meuPalpite = minhasPredicoes?.find((p) => p.matchId === item.id);
+        renderItem={({ item }: { item: Match }) => {
+          const meuPalpite = minhasPredicoes?.find((p: Prediction) => p.matchId === item.id);
           const avaliacao = meuPalpite ? avaliarPalpite(meuPalpite, item) : null;
 
           return (

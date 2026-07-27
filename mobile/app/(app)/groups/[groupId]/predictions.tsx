@@ -6,6 +6,7 @@ import { getMyPredictions } from '../../../../src/api/predictions';
 import { EmptyState, Screen, Subtitle, Title } from '../../../../src/components/ui';
 import { MatchPredictionRow } from '../../../../src/components/match-prediction-row';
 import { colors } from '../../../../src/theme/colors';
+import { Prediction } from '../../../../src/types/api';
 
 export default function RoundPredictionsScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -47,7 +48,7 @@ export default function RoundPredictionsScreen() {
                 match={item}
                 round={round}
                 groupId={groupId}
-                myPrediction={myPredictions?.find((p) => p.matchId === item.id)}
+                myPrediction={myPredictions?.find((p: Prediction) => p.matchId === item.id)}
               />
             )}
           />

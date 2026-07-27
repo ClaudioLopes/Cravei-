@@ -6,6 +6,7 @@ import { getStandings, getStandingsHistory } from '../../../../src/api/standings
 import { getCurrentRound } from '../../../../src/api/rounds';
 import { Card, EmptyState, Screen, Subtitle, Title } from '../../../../src/components/ui';
 import { colors } from '../../../../src/theme/colors';
+import { TurnoWinner } from '../../../../src/types/api';
 
 export default function StandingsScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -74,7 +75,7 @@ export default function StandingsScreen() {
           history && history.length > 0 ? (
             <View style={{ gap: 8, marginTop: 8 }}>
               <Subtitle>Campeões de turno</Subtitle>
-              {history.map((winner) => (
+              {history.map((winner: TurnoWinner) => (
                 <Card key={winner.id}>
                   <Text style={{ color: colors.text }}>
                     {winner.turno === 1 ? 'Turno' : 'Returno'}: {winner.user.nome} (

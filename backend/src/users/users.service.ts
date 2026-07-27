@@ -19,6 +19,11 @@ export class UsersService {
     return this.toPublicUser(user);
   }
 
+  async updatePushToken(id: string, pushToken: string) {
+    await this.prisma.user.update({ where: { id }, data: { pushToken } });
+    return { ok: true };
+  }
+
   private toPublicUser(user: {
     id: string;
     nome: string;

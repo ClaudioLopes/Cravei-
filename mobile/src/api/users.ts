@@ -8,3 +8,7 @@ export function getMe() {
 export function updateMe(data: { nome?: string; foto?: string }) {
   return api.patch<User>('/users/me', data).then((r) => r.data);
 }
+
+export function registerPushToken(pushToken: string) {
+  return api.post('/users/me/push-token', { pushToken }).then((r) => r.data);
+}

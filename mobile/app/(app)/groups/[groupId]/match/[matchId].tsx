@@ -5,6 +5,7 @@ import { getCurrentRound } from '../../../../../src/api/rounds';
 import { getMatchPredictions } from '../../../../../src/api/predictions';
 import { Card, EmptyState, Screen, Subtitle, Title } from '../../../../../src/components/ui';
 import { colors } from '../../../../../src/theme/colors';
+import { Match } from '../../../../../src/types/api';
 
 export default function MatchPredictionsScreen() {
   const { matchId } = useLocalSearchParams<{ matchId: string; groupId: string }>();
@@ -14,7 +15,7 @@ export default function MatchPredictionsScreen() {
     queryFn: getCurrentRound,
     retry: false,
   });
-  const match = round?.matches.find((m) => m.id === matchId);
+  const match = round?.matches.find((m: Match) => m.id === matchId);
 
   const { data: predictions } = useQuery({
     queryKey: ['predictions', 'match', matchId],

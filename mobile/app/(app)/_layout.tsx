@@ -1,10 +1,18 @@
+import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { Redirect, Stack } from 'expo-router';
 import { useAuth } from '../../src/context/auth-context';
 import { colors } from '../../src/theme/colors';
+import { registerForPushNotifications } from '../../src/lib/push-notifications';
 
 export default function AppLayout() {
   const { user, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      registerForPushNotifications().catch(() => {});
+    }
+  }, [user]);
 
   if (isLoading) {
     return (

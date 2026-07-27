@@ -77,8 +77,11 @@ npx eas submit --platform ios
 - Android: primeira submissão de contas novas do Google exige **teste fechado com 20 testers por 14 dias** antes de liberar produção.
 - iOS: a Apple faz revisão manual (1-3 dias úteis, às vezes rejeita e pede ajuste).
 
-## 7. Push notifications de verdade (opcional, pode ficar pra depois)
+## 7. Push notifications — ✅ implementado
 
-Hoje o app só loga no console em vez de enviar push de verdade. Quando você criar o projeto Firebase:
-1. Me manda as credenciais (arquivo `google-services.json` / `GoogleService-Info.plist` ou as chaves do FCM).
-2. Eu implemento o `FcmPushProvider` de verdade (a estrutura pra isso já existe em `backend/src/notifications/`).
+O app envia push de verdade via **serviço de push do Expo** (não FCM/APNs cru — mais simples pra apps Expo managed):
+
+- `mobile/src/lib/push-notifications.ts`: pede permissão, pega o Expo push token e registra no backend (`POST /users/me/push-token`) assim que o usuário loga.
+- `backend/src/notifications/expo-push.provider.ts`: envia via `https://exp.host/--/api/v2/push/send`, usando o `pushToken` salvo em cada usuário.
+- Só falta uma coisa pra funcionar em produção: subir o `.json` da conta de serviço do Firebase (Firebase Console → ⚙️ Configurações → Contas de serviço → gerar chave) em **expo.dev → projeto → Configuration → Credentials → Android → FCM V1 Service Account**. Sem isso, o push funciona em dev (Expo Go) mas pode falhar em builds de produção no Android.
+- iOS: a EAS Build cuida sozinha do certificado APNs usando sua conta Apple Developer, na hora do `eas build --platform ios`.

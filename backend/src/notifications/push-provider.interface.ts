@@ -8,8 +8,8 @@ export interface PushMessage {
 }
 
 // Abstração de envio de push, isolada conforme requisito não-funcional de confiabilidade (seção 9).
-// Implementação padrão do MVP (ConsolePushProvider) apenas loga; para produção, implemente
-// FcmPushProvider usando as credenciais de um projeto Firebase e troque o provider no módulo.
+// Implementação real (ExpoPushProvider) usa o serviço de push do Expo, endereçando pelo
+// pushToken salvo em cada usuário — ver expo-push.provider.ts.
 export interface PushProvider {
   send(message: PushMessage): Promise<void>;
 }

@@ -6,6 +6,7 @@ import { getCurrentRound } from '../../../../src/api/rounds';
 import { Button, Card, EmptyState, Screen, Subtitle, Title } from '../../../../src/components/ui';
 import { colors } from '../../../../src/theme/colors';
 import { effectiveDeadline, formatCountdown, formatDateTime, scoringConfigLabel } from '../../../../src/lib/deadline';
+import { PredictionStatusEntry } from '../../../../src/api/groups';
 
 export default function GroupDetailScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -102,7 +103,7 @@ export default function GroupDetailScreen() {
           <EmptyState message="Sem dados ainda." />
         ) : (
           <View style={{ gap: 8 }}>
-            {status.map((entry) => (
+            {status.map((entry: PredictionStatusEntry) => (
               <View
                 key={entry.user.id}
                 style={{ flexDirection: 'row', justifyContent: 'space-between' }}
