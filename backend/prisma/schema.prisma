@@ -1,0 +1,210 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum GroupTipo {
+  PUBLICO
+  PRIVADO
+}
+
+enum GroupPapel {
+  ADMIN
+  MEMBRO
+}
+
+enum MatchStatus {
+  AGENDADO
+  ADIADO
+  EM_ANDAMENTO
+  ENCERRADO
+}
+
+enum PushStatus {
+  PENDENTE
+  ENVIADO
+  FALHOU
+}
+
+model User {
+  id          String   @id @default(uuid())
+  nome        String
+  email       String   @unique
+  senhaHash   String
+  foto        String?
+  criadoEm    DateTime @default(now())
+
+  groupsDono      Group[]        @relation("GroupDono")
+  memberships     GroupMember[]
+  predictions     Prediction[]
+  standings       Standing[]
+  turnoWinners    TurnoWinner[]
+  pushOutboxItems PushOutbox[]
+}
+
+model Group {
+  id             String   @id @default(uuid())
+  nome           String
+  tipo           GroupTipo @default(PRIVADO)
+  codigoConvite  String   @unique
+  donoId         String
+  dono           User     @relation("GroupDono", fields: [donoId], references: [id])
+  // { tipo: "placar_exato" | "resultado_simples" | "camadas", pontosPlacarExato?, pontosResultado? }
+  scoringConfig  Json
+  criadoEm       DateTime @default(now())
+
+  members         GroupMember[]
+  turnoLocks      GroupTurnoLock[]
+  standings       Standing[]
+  turnoWinners    TurnoWinner[]
+  predictionScores PredictionScore[]
+}
+
+model GroupMember {
+  id       String     @id @default(uuid())
+  groupId  String
+  group    Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User       @relation(fields: [userId], references: [id])
+  papel    GroupPapel @default(MEMBRO)
+  entrouEm DateTime   @default(now())
+
+  @@unique([groupId, userId])
+}
+
+model Season {
+  id         String   @id @default(uuid())
+  nome       String
+  ano        Int
+  serie      String   @default("a")
+  turnoAtual Int      @default(1)
+
+  rounds Round[]
+}
+
+model Round {
+  id                  String   @id @default(uuid())
+  seasonId            String
+  season              Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  numero              Int
+  turno               Int
+  // referência fixa usada para travar a rodada inteira (regra 5.1); não muda mesmo se jogos forem remarcados
+  primeiroJogoOriginal DateTime
+  // rodada apontada como "atual" pela última sincronização com a fonte de dados
+  atual               Boolean  @default(false)
+  encerrada           Boolean  @default(false)
+  notificacaoEnviada  Boolean  @default(false)
+
+  matches Match[]
+
+  @@unique([seasonId, numero])
+}
+
+model Match {
+  id          String      @id @default(uuid())
+  roundId     String
+  round       Round       @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  externalId  String      @unique
+  timeCasa    String
+  timeFora    String
+  // data/hora original vinda da fonte na primeira sincronização; nunca é sobrescrita depois
+  dataHoraOriginal DateTime
+  // data/hora vigente segundo a última sincronização (pode mudar em remarcações)
+  dataHoraPrevista DateTime
+  // setado quando |dataHoraPrevista - dataHoraOriginal| > RESCHEDULE_THRESHOLD_DAYS (regra 5.1)
+  prazoIndividual  DateTime?
+  status      MatchStatus @default(AGENDADO)
+  placarCasa  Int?
+  placarFora  Int?
+  criadoEm    DateTime    @default(now())
+  atualizadoEm DateTime   @updatedAt
+
+  predictions Prediction[]
+}
+
+model Prediction {
+  id                 String   @id @default(uuid())
+  matchId            String
+  match              Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  userId             String
+  user               User     @relation(fields: [userId], references: [id])
+  placarCasaPalpite  Int
+  placarForaPalpite  Int
+  criadoEm           DateTime @default(now())
+  editadoEm          DateTime @updatedAt
+
+  scores PredictionScore[]
+
+  @@unique([matchId, userId])
+}
+
+// Pontuação de um palpite dentro de um grupo específico. Necessário porque a regra de pontuação
+// é definida por grupo (5.2): o mesmo palpite pode valer pontos diferentes em grupos diferentes
+// caso o usuário participe de mais de um grupo. Recalculado (upsert) sempre que o jogo pontua,
+// o que também garante idempotência em caso de correção de placar/nova sincronização.
+model PredictionScore {
+  id           String     @id @default(uuid())
+  groupId      String
+  group        Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  predictionId String
+  prediction   Prediction @relation(fields: [predictionId], references: [id], onDelete: Cascade)
+  pontos       Int
+  calculadoEm  DateTime   @updatedAt
+
+  @@unique([groupId, predictionId])
+}
+
+// Presença de uma linha para (groupId, turno) = regra de pontuação travada para aquele turno (regra 5.2)
+model GroupTurnoLock {
+  id        String   @id @default(uuid())
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  turno     Int
+  travadaEm DateTime @default(now())
+
+  @@unique([groupId, turno])
+}
+
+// Escopado por turno: o "zeramento" do returno é implícito (turno 2 começa com linhas novas)
+model Standing {
+  id           String   @id @default(uuid())
+  groupId      String
+  group        Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  turno        Int
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  pontosTotais Int      @default(0)
+  atualizadoEm DateTime @updatedAt
+
+  @@unique([groupId, turno, userId])
+}
+
+model TurnoWinner {
+  id           String   @id @default(uuid())
+  groupId      String
+  group        Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  turno        Int
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  pontosFinais Int
+  definidoEm   DateTime @default(now())
+
+  @@unique([groupId, turno])
+}
+
+model PushOutbox {
+  id          String     @id @default(uuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  title       String
+  body        String
+  data        Json?
+  status      PushStatus @default(PENDENTE)
+  tentativas  Int        @default(0)
+  criadoEm    DateTime   @default(now())
+  atualizadoEm DateTime  @updatedAt
+}

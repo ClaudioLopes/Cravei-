@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Env files with real secrets — nunca versionar (apenas .env.example)
+.env
+.env.local
+.env.*.local
+
+# Backend build output
+backend/dist/
+
+# Prisma
+backend/prisma/*.db
+
+# Expo / React Native
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+mobile/*.jks
+mobile/*.p8
+mobile/*.p12
+mobile/*.key
+mobile/*.mobileprovision
+mobile/*.orig.*
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Configuração local do Claude Code (específica da máquina/sessão)
+.claude/
+
+# Testes/scratch temporários
+*.tsbuildinfo

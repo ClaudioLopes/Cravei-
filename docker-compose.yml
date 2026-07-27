@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bolao-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bolao
+      POSTGRES_PASSWORD: bolao
+      POSTGRES_DB: bolao
+    ports:
+      - "5432:5432"
+    volumes:
+      - bolao_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  bolao_postgres_data:

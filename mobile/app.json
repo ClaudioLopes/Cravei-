@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Bolão do Brasileirão",
+    "slug": "bolao-brasileirao",
+    "scheme": "bolao",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#0B1D3A"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bolao.brasileirao"
+    },
+    "android": {
+      "package": "com.bolao.brasileirao",
+      "adaptiveIcon": {
+        "backgroundColor": "#0B1D3A"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": ["expo-router"]
+  }
+}
