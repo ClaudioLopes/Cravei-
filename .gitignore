@@ -8,6 +8,7 @@ node_modules/
 
 # Backend build output
 backend/dist/
+backend/coverage/
 
 # Prisma
 backend/prisma/*.db
