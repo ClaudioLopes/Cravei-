@@ -98,7 +98,7 @@ export function MatchPredictionRow({
             alignItems: 'center',
           }}
         >
-          <Text style={{ color: colors.background, fontWeight: '700' }}>
+          <Text style={{ color: colors.background, fontFamily: 'Oswald_700Bold', textTransform: 'uppercase', letterSpacing: 0.4 }}>
             {mutation.isPending ? 'Salvando…' : 'Salvar palpite'}
           </Text>
         </Pressable>
@@ -115,7 +115,7 @@ export function MatchPredictionRow({
               alignItems: 'center',
             }}
           >
-            <Text style={{ color: colors.accent, fontWeight: '700' }}>Ver palpites</Text>
+            <Text style={{ color: colors.accent, fontFamily: 'Oswald_700Bold', textTransform: 'uppercase', letterSpacing: 0.4 }}>Ver palpites</Text>
           </Pressable>
         )}
       </View>
@@ -128,8 +128,8 @@ function placarInputStyle(disabled: boolean) {
     width: 48,
     textAlign: 'center' as const,
     fontSize: 18,
-    fontWeight: '700' as const,
-    color: colors.text,
+    fontFamily: 'Oswald_700Bold',
+    color: colors.accent,
     backgroundColor: disabled ? colors.border : colors.surfaceAlt,
     borderRadius: 8,
     paddingVertical: 8,

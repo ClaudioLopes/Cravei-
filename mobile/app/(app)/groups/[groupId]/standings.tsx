@@ -65,7 +65,7 @@ export default function StandingsScreen() {
               <Text style={{ color: colors.text, fontSize: 15 }}>
                 {item.posicao}º · {item.user.nome}
               </Text>
-              <Text style={{ color: colors.accent, fontSize: 18, fontWeight: '700' }}>
+              <Text style={{ color: colors.accent, fontSize: 18, fontFamily: 'Oswald_700Bold' }}>
                 {item.pontosTotais} pts
               </Text>
             </View>

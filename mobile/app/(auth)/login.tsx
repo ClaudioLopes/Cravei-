@@ -26,8 +26,8 @@ export default function LoginScreen() {
 
   return (
     <Screen>
-      <Title>Bolão do Brasileirão</Title>
-      <Subtitle>Entre para acompanhar seus grupos e palpites.</Subtitle>
+      <Title>Cravei!</Title>
+      <Subtitle>Bolão do Brasileirão entre amigos. Entre para acompanhar seus grupos e palpites.</Subtitle>
 
       <View style={{ gap: 12 }}>
         <Field

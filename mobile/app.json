@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Bolão do Brasileirão",
+    "name": "Cravei!",
     "slug": "bolao-brasileirao",
     "scheme": "bolao",
     "version": "0.1.0",
@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0B1D3A"
+      "backgroundColor": "#0A1712"
     },
     "ios": {
       "supportsTablet": true,
@@ -24,7 +24,7 @@
       "package": "com.bolao.brasileirao",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0B1D3A"
+        "backgroundColor": "#0A1712"
       }
     },
     "web": {
@@ -38,7 +38,7 @@
         "expo-notifications",
         {
           "icon": "./assets/adaptive-icon.png",
-          "color": "#0B1D3A"
+          "color": "#0A1712"
         }
       ]
     ],
