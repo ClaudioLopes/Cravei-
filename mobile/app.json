@@ -40,6 +40,12 @@
           "icon": "./assets/adaptive-icon.png",
           "color": "#0A1712"
         }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Usar Face ID para entrar mais rápido no Cravei!."
+        }
       ]
     ],
     "extra": {
