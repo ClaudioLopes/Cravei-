@@ -56,6 +56,8 @@ model Group {
   dono           User     @relation("GroupDono", fields: [donoId], references: [id])
   // { tipo: "placar_exato" | "resultado_simples" | "camadas", pontosPlacarExato?, pontosResultado? }
   scoringConfig  Json
+  // quantos colocados são reconhecidos como "campeões" ao fechar o turno: 1 (só o líder) ou 3 (pódio)
+  podioTamanho   Int      @default(1)
   criadoEm       DateTime @default(now())
 
   members         GroupMember[]
@@ -112,6 +114,8 @@ model Match {
   externalId  String      @unique
   timeCasa    String
   timeFora    String
+  crestCasa   String?
+  crestFora   String?
   // data/hora original vinda da fonte na primeira sincronização; nunca é sobrescrita depois
   dataHoraOriginal DateTime
   // data/hora vigente segundo a última sincronização (pode mudar em remarcações)
@@ -189,12 +193,13 @@ model TurnoWinner {
   groupId      String
   group        Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   turno        Int
+  posicao      Int      @default(1) // 1º, 2º ou 3º colocado — ver Group.podioTamanho
   userId       String
   user         User     @relation(fields: [userId], references: [id])
   pontosFinais Int
   definidoEm   DateTime @default(now())
 
-  @@unique([groupId, turno])
+  @@unique([groupId, turno, posicao])
 }
 
 model PushOutbox {

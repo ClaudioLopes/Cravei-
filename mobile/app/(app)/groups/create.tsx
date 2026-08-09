@@ -8,7 +8,7 @@ import { colors } from '../../../src/theme/colors';
 import { ScoringConfig, ScoringType } from '../../../src/types/api';
 
 const TIPO_OPTIONS: { value: ScoringType; label: string; helper: string }[] = [
-  { value: 'placar_exato', label: 'Placar exato', helper: 'Só pontua quem acerta o placar exato.' },
+  { value: 'placar_exato', label: 'Placar exato', helper: 'Só pontua quem acerta o placar exato (1 ponto).' },
   {
     value: 'resultado_simples',
     label: 'Resultado simples',
@@ -28,6 +28,7 @@ export default function CreateGroupScreen() {
   const [scoringTipo, setScoringTipo] = useState<ScoringType>('placar_exato');
   const [pontosPlacarExato, setPontosPlacarExato] = useState('3');
   const [pontosResultado, setPontosResultado] = useState('1');
+  const [podioTamanho, setPodioTamanho] = useState<1 | 3>(1);
   const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
@@ -40,7 +41,7 @@ export default function CreateGroupScreen() {
               pontosResultado: Number(pontosResultado) || 1,
             }
           : { tipo: scoringTipo };
-      return createGroup({ nome: nome.trim(), tipo, scoringConfig });
+      return createGroup({ nome: nome.trim(), tipo, scoringConfig, podioTamanho });
     },
     onSuccess: async (group) => {
       await queryClient.invalidateQueries({ queryKey: ['groups', 'me'] });
@@ -106,6 +107,24 @@ export default function CreateGroupScreen() {
           </View>
         </View>
       )}
+
+      <View style={{ gap: 8 }}>
+        <Subtitle>Campeão do turno</Subtitle>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Pressable onPress={() => setPodioTamanho(1)} style={{ flex: 1 }}>
+            <Card style={podioTamanho === 1 ? { borderColor: colors.accent } : undefined}>
+              <Text style={{ color: colors.text, fontWeight: '600' }}>Só o líder</Text>
+              <Text style={{ color: colors.textMuted, fontSize: 13 }}>Reconhece 1 campeão por turno.</Text>
+            </Card>
+          </Pressable>
+          <Pressable onPress={() => setPodioTamanho(3)} style={{ flex: 1 }}>
+            <Card style={podioTamanho === 3 ? { borderColor: colors.accent } : undefined}>
+              <Text style={{ color: colors.text, fontWeight: '600' }}>Pódio (1º, 2º, 3º)</Text>
+              <Text style={{ color: colors.textMuted, fontSize: 13 }}>Reconhece os 3 primeiros colocados.</Text>
+            </Card>
+          </Pressable>
+        </View>
+      </View>
 
       <ErrorText>{error}</ErrorText>
       <Button

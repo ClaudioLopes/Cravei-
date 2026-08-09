@@ -5,6 +5,8 @@ export interface NormalizedMatch {
   roundNumber: number;
   timeCasa: string;
   timeFora: string;
+  crestCasa: string | null;
+  crestFora: string | null;
   dataHora: Date;
   status: NormalizedMatchStatus;
   placarCasa: number | null;

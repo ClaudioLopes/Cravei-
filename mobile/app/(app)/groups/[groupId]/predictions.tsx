@@ -1,4 +1,4 @@
-import { FlatList } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { getCurrentRound } from '../../../../src/api/rounds';
@@ -6,7 +6,7 @@ import { getMyPredictions } from '../../../../src/api/predictions';
 import { EmptyState, Screen, Subtitle, Title } from '../../../../src/components/ui';
 import { MatchPredictionRow } from '../../../../src/components/match-prediction-row';
 import { colors } from '../../../../src/theme/colors';
-import { Prediction } from '../../../../src/types/api';
+import { Match, Prediction } from '../../../../src/types/api';
 
 export default function RoundPredictionsScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -39,19 +39,21 @@ export default function RoundPredictionsScreen() {
             jogos que ainda vão começar mais tarde.
           </Subtitle>
 
-          <FlatList
-            data={round.matches}
-            keyExtractor={(m) => m.id}
+          <ScrollView
             contentContainerStyle={{ gap: 12, paddingVertical: 12 }}
-            renderItem={({ item }) => (
-              <MatchPredictionRow
-                match={item}
-                round={round}
-                groupId={groupId}
-                myPrediction={myPredictions?.find((p: Prediction) => p.matchId === item.id)}
-              />
-            )}
-          />
+            keyboardShouldPersistTaps="handled"
+          >
+            {round.matches.map((item: Match) => (
+              <View key={item.id}>
+                <MatchPredictionRow
+                  match={item}
+                  round={round}
+                  groupId={groupId}
+                  myPrediction={myPredictions?.find((p: Prediction) => p.matchId === item.id)}
+                />
+              </View>
+            ))}
+          </ScrollView>
         </>
       )}
     </Screen>

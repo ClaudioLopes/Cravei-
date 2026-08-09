@@ -13,6 +13,7 @@ import {
 interface SourceTeam {
   id: number;
   name: string;
+  crest: string | null;
 }
 
 interface SourceMatch {
@@ -47,6 +48,8 @@ function toNormalizedMatch(match: SourceMatch): NormalizedMatch {
     roundNumber: match.matchday,
     timeCasa: match.homeTeam.name,
     timeFora: match.awayTeam.name,
+    crestCasa: match.homeTeam.crest ?? null,
+    crestFora: match.awayTeam.crest ?? null,
     dataHora: new Date(match.utcDate),
     status: mapStatus(match.status),
     placarCasa: match.score.fullTime.home,

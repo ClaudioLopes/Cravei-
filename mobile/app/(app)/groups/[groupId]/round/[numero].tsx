@@ -7,6 +7,7 @@ import { Card, EmptyState, Screen, Subtitle, Title } from '../../../../../src/co
 import { colors } from '../../../../../src/theme/colors';
 import { formatDateTime } from '../../../../../src/lib/deadline';
 import { Match, Prediction } from '../../../../../src/types/api';
+import { TeamCrest } from '../../../../../src/components/team-crest';
 
 const STATUS_LABEL: Record<Match['status'], string> = {
   AGENDADO: 'Agendado',
@@ -98,15 +99,17 @@ export default function RoundByNumberScreen() {
               <Text style={{ color: colors.textMuted, fontSize: 12 }}>
                 {formatDateTime(item.dataHoraPrevista)} · {STATUS_LABEL[item.status]}
               </Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <Text style={{ flex: 1, color: colors.text, fontSize: 15, textAlign: 'right' }}>
                   {item.timeCasa}
                 </Text>
+                <TeamCrest uri={item.crestCasa} />
                 <Text style={{ color: colors.accentAlt, fontSize: 18, fontWeight: '700' }}>
                   {item.status === 'ENCERRADO' || item.status === 'EM_ANDAMENTO'
                     ? `${item.placarCasa ?? 0} x ${item.placarFora ?? 0}`
                     : 'x'}
                 </Text>
+                <TeamCrest uri={item.crestFora} />
                 <Text style={{ flex: 1, color: colors.text, fontSize: 15 }}>{item.timeFora}</Text>
               </View>
 

@@ -30,6 +30,7 @@ export interface Group {
   codigoConvite: string;
   donoId: string;
   scoringConfig: ScoringConfig;
+  podioTamanho: number;
   criadoEm: string;
   meuPapel?: GroupPapel;
 }
@@ -51,6 +52,8 @@ export interface Match {
   externalId: string;
   timeCasa: string;
   timeFora: string;
+  crestCasa: string | null;
+  crestFora: string | null;
   dataHoraOriginal: string;
   dataHoraPrevista: string;
   prazoIndividual: string | null;
@@ -95,6 +98,7 @@ export interface TurnoWinner {
   id: string;
   groupId: string;
   turno: number;
+  posicao: number;
   userId: string;
   pontosFinais: number;
   definidoEm: string;

@@ -27,6 +27,7 @@ export class GroupsService {
         donoId: userId,
         scoringConfig: (dto.scoringConfig ??
           DEFAULT_SCORING_CONFIG) as unknown as Prisma.InputJsonValue,
+        podioTamanho: dto.podioTamanho ?? 1,
         members: {
           create: { userId, papel: 'ADMIN' },
         },

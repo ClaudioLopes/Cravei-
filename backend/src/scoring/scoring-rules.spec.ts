@@ -1,6 +1,7 @@
 import {
   calcularPontos,
-  PONTOS_PLACAR_EXATO_PADRAO,
+  PONTOS_PLACAR_EXATO_UNICO,
+  PONTOS_CAMADAS_PLACAR_EXATO_PADRAO,
   PONTOS_RESULTADO_PADRAO,
 } from './scoring-rules';
 
@@ -16,7 +17,7 @@ describe('calcularPontos', () => {
         resultado,
         config,
       );
-      expect(pontos).toBe(PONTOS_PLACAR_EXATO_PADRAO);
+      expect(pontos).toBe(PONTOS_PLACAR_EXATO_UNICO);
     });
 
     it('não pontua quando acerta só o vencedor, sem o placar', () => {
@@ -104,7 +105,7 @@ describe('calcularPontos', () => {
       const config = { tipo: 'camadas' as const };
       expect(
         calcularPontos({ placarCasaPalpite: 2, placarForaPalpite: 1 }, resultado, config),
-      ).toBe(PONTOS_PLACAR_EXATO_PADRAO);
+      ).toBe(PONTOS_CAMADAS_PLACAR_EXATO_PADRAO);
       expect(
         calcularPontos({ placarCasaPalpite: 4, placarForaPalpite: 0 }, resultado, config),
       ).toBe(PONTOS_RESULTADO_PADRAO);

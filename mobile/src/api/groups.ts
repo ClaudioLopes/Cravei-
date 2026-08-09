@@ -12,6 +12,7 @@ export function createGroup(data: {
   nome: string;
   tipo?: 'PUBLICO' | 'PRIVADO';
   scoringConfig?: ScoringConfig;
+  podioTamanho?: 1 | 3;
 }) {
   return api.post<Group>('/groups', data).then((r) => r.data);
 }

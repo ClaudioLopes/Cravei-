@@ -7,6 +7,7 @@ import { Match, Prediction, Round } from '../types/api';
 import { effectiveDeadline, formatCountdown, formatDateTime } from '../lib/deadline';
 import { colors } from '../theme/colors';
 import { Card } from './ui';
+import { TeamCrest } from './team-crest';
 
 const JOGO_COMECOU = ['EM_ANDAMENTO', 'ENCERRADO'];
 
@@ -24,6 +25,17 @@ export function MatchPredictionRow({
   const queryClient = useQueryClient();
   const [casa, setCasa] = useState(myPrediction ? String(myPrediction.placarCasaPalpite) : '');
   const [fora, setFora] = useState(myPrediction ? String(myPrediction.placarForaPalpite) : '');
+  const [justSaved, setJustSaved] = useState(false);
+
+  function handleChangeCasa(value: string) {
+    setJustSaved(false);
+    setCasa(value);
+  }
+
+  function handleChangeFora(value: string) {
+    setJustSaved(false);
+    setFora(value);
+  }
 
   const deadline = effectiveDeadline(match, round);
   const isLocked = new Date() >= deadline;
@@ -37,6 +49,7 @@ export function MatchPredictionRow({
         placarForaPalpite: Number(fora),
       }),
     onSuccess: () => {
+      setJustSaved(true);
       queryClient.invalidateQueries({ queryKey: ['predictions', 'me', match.roundId] });
       queryClient.invalidateQueries({ queryKey: ['predictions-status', groupId] });
     },
@@ -52,13 +65,14 @@ export function MatchPredictionRow({
         {match.prazoIndividual ? ' · jogo remarcado (prazo próprio)' : ''}
       </Text>
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Text style={{ flex: 1, color: colors.text, fontSize: 15, textAlign: 'right' }}>
           {match.timeCasa}
         </Text>
+        <TeamCrest uri={match.crestCasa} />
         <TextInput
           value={casa}
-          onChangeText={setCasa}
+          onChangeText={handleChangeCasa}
           editable={!isLocked}
           keyboardType="number-pad"
           maxLength={2}
@@ -67,12 +81,13 @@ export function MatchPredictionRow({
         <Text style={{ color: colors.textMuted }}>x</Text>
         <TextInput
           value={fora}
-          onChangeText={setFora}
+          onChangeText={handleChangeFora}
           editable={!isLocked}
           keyboardType="number-pad"
           maxLength={2}
           style={placarInputStyle(isLocked)}
         />
+        <TeamCrest uri={match.crestFora} />
         <Text style={{ flex: 1, color: colors.text, fontSize: 15 }}>{match.timeFora}</Text>
       </View>
 
@@ -92,14 +107,14 @@ export function MatchPredictionRow({
           onPress={() => mutation.mutate()}
           style={{
             flex: 1,
-            backgroundColor: podeSalvar ? colors.accent : colors.border,
+            backgroundColor: justSaved ? colors.accentAlt : podeSalvar ? colors.accent : colors.border,
             borderRadius: 8,
             paddingVertical: 10,
             alignItems: 'center',
           }}
         >
           <Text style={{ color: colors.background, fontFamily: 'Oswald_700Bold', textTransform: 'uppercase', letterSpacing: 0.4 }}>
-            {mutation.isPending ? 'Salvando…' : 'Salvar palpite'}
+            {mutation.isPending ? 'Salvando…' : justSaved ? '✓ Palpite salvo' : 'Salvar palpite'}
           </Text>
         </Pressable>
 

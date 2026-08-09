@@ -8,6 +8,23 @@ import { Card, EmptyState, Screen, Subtitle, Title } from '../../../../src/compo
 import { colors } from '../../../../src/theme/colors';
 import { TurnoWinner } from '../../../../src/types/api';
 
+const POSICAO_LABEL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
+
+// history vem ordenado por [turno, posicao] do backend — só precisa juntar os colocados
+// consecutivos do mesmo turno num único grupo, preservando a ordem.
+function agruparPorTurno(history: TurnoWinner[]): [number, TurnoWinner[]][] {
+  const grupos: [number, TurnoWinner[]][] = [];
+  for (const winner of history) {
+    const ultimo = grupos[grupos.length - 1];
+    if (ultimo && ultimo[0] === winner.turno) {
+      ultimo[1].push(winner);
+    } else {
+      grupos.push([winner.turno, [winner]]);
+    }
+  }
+  return grupos;
+}
+
 export default function StandingsScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   // null = ainda não escolhido pelo usuário -> usa o turno da rodada atual como padrão
@@ -75,12 +92,22 @@ export default function StandingsScreen() {
           history && history.length > 0 ? (
             <View style={{ gap: 8, marginTop: 8 }}>
               <Subtitle>Campeões de turno</Subtitle>
-              {history.map((winner: TurnoWinner) => (
-                <Card key={winner.id}>
-                  <Text style={{ color: colors.text }}>
-                    {winner.turno === 1 ? 'Turno' : 'Returno'}: {winner.user.nome} (
-                    {winner.pontosFinais} pts)
+              {agruparPorTurno(history).map(([turnoDoGrupo, colocados]) => (
+                <Card key={turnoDoGrupo}>
+                  <Text style={{ color: colors.text, fontWeight: '600', marginBottom: 4 }}>
+                    {turnoDoGrupo === 1 ? 'Turno' : 'Returno'}
                   </Text>
+                  {colocados.map((winner) => (
+                    <View
+                      key={winner.id}
+                      style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+                    >
+                      <Text style={{ color: colors.textMuted }}>
+                        {POSICAO_LABEL[winner.posicao] ?? `${winner.posicao}º`} {winner.user.nome}
+                      </Text>
+                      <Text style={{ color: colors.accentAlt }}>{winner.pontosFinais} pts</Text>
+                    </View>
+                  ))}
                 </Card>
               ))}
             </View>

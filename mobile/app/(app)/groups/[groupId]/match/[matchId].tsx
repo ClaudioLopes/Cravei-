@@ -6,6 +6,7 @@ import { getMatchPredictions } from '../../../../../src/api/predictions';
 import { Card, EmptyState, Screen, Subtitle, Title } from '../../../../../src/components/ui';
 import { colors } from '../../../../../src/theme/colors';
 import { Match } from '../../../../../src/types/api';
+import { TeamCrest } from '../../../../../src/components/team-crest';
 
 export default function MatchPredictionsScreen() {
   const { matchId } = useLocalSearchParams<{ matchId: string; groupId: string }>();
@@ -29,9 +30,13 @@ export default function MatchPredictionsScreen() {
 
       {match && (
         <Card>
-          <Title>
-            {match.timeCasa} x {match.timeFora}
-          </Title>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
+            <TeamCrest uri={match.crestCasa} size={28} />
+            <Title>
+              {match.timeCasa} x {match.timeFora}
+            </Title>
+            <TeamCrest uri={match.crestFora} size={28} />
+          </View>
           {match.status === 'ENCERRADO' ? (
             <Subtitle>
               Placar final: {match.placarCasa} x {match.placarFora}

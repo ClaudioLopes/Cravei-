@@ -24,16 +24,18 @@ export class StandingsService {
 
     const winners = await this.prisma.turnoWinner.findMany({
       where: { groupId },
-      orderBy: { turno: 'asc' },
+      orderBy: [{ turno: 'asc' }, { posicao: 'asc' }],
       include: { user: { select: { id: true, nome: true, foto: true } } },
     });
     return winners;
   }
 
+  // Retorna o pódio (1 ou 3 colocados, conforme Group.podioTamanho) de um turno específico.
   async getTurnoWinner(userId: string, groupId: string, turno: number) {
     await this.assertMember(userId, groupId);
-    return this.prisma.turnoWinner.findUnique({
-      where: { groupId_turno: { groupId, turno } },
+    return this.prisma.turnoWinner.findMany({
+      where: { groupId, turno },
+      orderBy: { posicao: 'asc' },
       include: { user: { select: { id: true, nome: true, foto: true } } },
     });
   }

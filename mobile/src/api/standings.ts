@@ -12,5 +12,5 @@ export function getStandingsHistory(groupId: string) {
 }
 
 export function getTurnoWinner(groupId: string, turno: number) {
-  return api.get<TurnoWinner | null>(`/groups/${groupId}/turno-winner/${turno}`).then((r) => r.data);
+  return api.get<TurnoWinner[]>(`/groups/${groupId}/turno-winner/${turno}`).then((r) => r.data);
 }

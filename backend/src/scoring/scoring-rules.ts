@@ -12,7 +12,8 @@ export interface PredictionGuess {
 
 // Sem padrão fixo do sistema para "camadas" (ponto em aberto #1 do documento — livre para o admin);
 // usados apenas como sugestão de preenchimento no formulário do app e como fallback caso não informado.
-export const PONTOS_PLACAR_EXATO_PADRAO = 3;
+export const PONTOS_PLACAR_EXATO_UNICO = 1; // modo "placar_exato": só pontua o acerto exato, vale 1
+export const PONTOS_CAMADAS_PLACAR_EXATO_PADRAO = 3; // modo "camadas": acerto exato vale mais que o resultado
 export const PONTOS_RESULTADO_PADRAO = 1;
 
 type Resultado = 'CASA' | 'FORA' | 'EMPATE';
@@ -37,12 +38,12 @@ export function calcularPontos(
 
   switch (config.tipo) {
     case 'placar_exato':
-      return acertouExato ? PONTOS_PLACAR_EXATO_PADRAO : 0;
+      return acertouExato ? PONTOS_PLACAR_EXATO_UNICO : 0;
     case 'resultado_simples':
       return acertouResultado ? PONTOS_RESULTADO_PADRAO : 0;
     case 'camadas':
       if (acertouExato) {
-        return config.pontosPlacarExato ?? PONTOS_PLACAR_EXATO_PADRAO;
+        return config.pontosPlacarExato ?? PONTOS_CAMADAS_PLACAR_EXATO_PADRAO;
       }
       if (acertouResultado) {
         return config.pontosResultado ?? PONTOS_RESULTADO_PADRAO;

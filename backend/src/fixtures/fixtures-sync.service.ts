@@ -173,6 +173,8 @@ export class FixturesSyncService {
           externalId: match.externalId,
           timeCasa: match.timeCasa,
           timeFora: match.timeFora,
+          crestCasa: match.crestCasa,
+          crestFora: match.crestFora,
           dataHoraOriginal: match.dataHora,
           dataHoraPrevista: match.dataHora,
           status: match.status as MatchStatus,
@@ -207,6 +209,8 @@ export class FixturesSyncService {
         status,
         placarCasa: match.placarCasa,
         placarFora: match.placarFora,
+        crestCasa: match.crestCasa,
+        crestFora: match.crestFora,
       },
     });
 
