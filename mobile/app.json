@@ -48,6 +48,15 @@
         {
           "faceIDPermission": "Usar Face ID para entrar mais rápido no Cravei!."
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35
+          }
+        }
       ]
     ],
     "extra": {
