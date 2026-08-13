@@ -21,6 +21,9 @@
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://cravei-production.up.railway.app"
+      },
+      "ios": {
+        "image": "macos-tahoe-26.5-xcode-26.6"
       }
     }
   },
