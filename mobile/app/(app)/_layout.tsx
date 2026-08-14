@@ -11,15 +11,25 @@ export default function AppLayout() {
   const { user, isLoading } = useAuth();
   const [locked, setLocked] = useState(false);
   const appState = useRef(AppState.currentState);
+  // O próprio prompt do Face ID/Touch ID faz o app "sair e voltar" do primeiro plano do
+  // ponto de vista do AppState — sem essa trava, o listener abaixo interpretava a volta do
+  // prompt como "usuário voltou do segundo plano" e chamava tryUnlock() de novo, num loop.
+  const authenticatingRef = useRef(false);
 
   const tryUnlock = useCallback(async () => {
+    if (authenticatingRef.current) return;
     if (!(await isBiometricLoginEnabled())) {
       setLocked(false);
       return;
     }
     setLocked(true);
-    const success = await authenticateWithBiometrics();
-    if (success) setLocked(false);
+    authenticatingRef.current = true;
+    try {
+      const success = await authenticateWithBiometrics();
+      if (success) setLocked(false);
+    } finally {
+      authenticatingRef.current = false;
+    }
   }, []);
 
   useEffect(() => {
@@ -31,7 +41,10 @@ export default function AppLayout() {
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (next: AppStateStatus) => {
-      if (appState.current.match(/inactive|background/) && next === 'active' && user) {
+      // Só "background" conta como o app tendo saído de verdade (usuário trocou de app,
+      // bloqueou o aparelho). "inactive" também acontece em blips transitórios — central de
+      // controle, ligação chegando, e o próprio prompt do Face ID — e não deve re-travar.
+      if (appState.current === 'background' && next === 'active' && user) {
         tryUnlock();
       }
       appState.current = next;
