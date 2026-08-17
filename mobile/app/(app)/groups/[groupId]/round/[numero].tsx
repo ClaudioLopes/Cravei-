@@ -25,6 +25,9 @@ function resultadoDoJogo(casa: number, fora: number): Resultado {
 }
 
 function avaliarPalpite(pred: Prediction, match: Match): 'exato' | 'resultado' | 'errou' | null {
+  // Só avalia jogos realmente encerrados — um placar não-nulo sozinho não basta (pode ser um
+  // valor parcial/desatualizado de um jogo ainda agendado ou em andamento).
+  if (match.status !== 'ENCERRADO') return null;
   if (match.placarCasa === null || match.placarFora === null) return null;
   const acertouExato =
     pred.placarCasaPalpite === match.placarCasa && pred.placarForaPalpite === match.placarFora;
