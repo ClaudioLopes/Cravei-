@@ -43,6 +43,14 @@ export class FixturesSyncService {
       return;
     }
 
+    // getCurrentRound() só reinclui jogos de rodadas passadas enquanto a FONTE ainda não os
+    // marcou como encerrados — se o status da fonte virar "FINISHED" bem na janela em que a
+    // rodada atual avança, o jogo cai fora desse retorno permanentemente e nosso registro local
+    // (se ainda não tiver sido atualizado a tempo) fica preso em AGENDADO/EM_ANDAMENTO pra
+    // sempre. Aqui, resincroniza explicitamente qualquer rodada nossa ainda não fechada — o
+    // getRound() do provider não filtra por status, então corrige esses presos.
+    await this.resyncRodadasAbertas(normalizedRound.numero);
+
     const season = await this.getOrCreateActiveSeason();
     const turnoAtual = normalizedRound.numero <= ULTIMA_RODADA_TURNO_1 ? 1 : 2;
 
@@ -73,6 +81,24 @@ export class FixturesSyncService {
       }
 
       await this.recomputeRoundClosure(round.id, season.id, turno);
+    }
+  }
+
+  // Resincroniza (via getRound, sem o filtro de "já encerrado" que getCurrentRound aplica)
+  // qualquer rodada nossa anterior à atual que ainda não esteja marcada como encerrada — pega os
+  // presos que caíram fora do retorno normal de getCurrentRound() (ver comentário em sync()).
+  private async resyncRodadasAbertas(numeroRodadaAtual: number): Promise<void> {
+    const rodadasAbertas = await this.prisma.round.findMany({
+      where: { numero: { lt: numeroRodadaAtual }, encerrada: false },
+      select: { numero: true },
+    });
+
+    for (const { numero } of rodadasAbertas) {
+      try {
+        await this.syncRoundByNumber(numero);
+      } catch (error) {
+        this.logger.error(`Falha ao resincronizar a rodada ${numero} presa.`, error as Error);
+      }
     }
   }
 
