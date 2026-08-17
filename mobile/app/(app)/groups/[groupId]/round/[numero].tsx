@@ -3,10 +3,11 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { getRoundByNumber } from '../../../../../src/api/rounds';
 import { getMyPredictions } from '../../../../../src/api/predictions';
+import { getGroup } from '../../../../../src/api/groups';
 import { Card, EmptyState, Screen, Subtitle, Title } from '../../../../../src/components/ui';
 import { colors } from '../../../../../src/theme/colors';
 import { formatDateTime } from '../../../../../src/lib/deadline';
-import { Match, Prediction } from '../../../../../src/types/api';
+import { Match, Prediction, ScoringType } from '../../../../../src/types/api';
 import { TeamCrest } from '../../../../../src/components/team-crest';
 
 const STATUS_LABEL: Record<Match['status'], string> = {
@@ -43,6 +44,18 @@ const AVALIACAO_LABEL: Record<'exato' | 'resultado' | 'errou', { texto: string; 
   errou: { texto: '✗ Errou', cor: colors.danger },
 };
 
+// No modo "placar_exato", acertar só o vencedor não pontua — mostrar "Acertou o resultado" (com
+// cor de sucesso) nesse caso passaria a impressão errada de que rendeu pontos.
+const AVALIACAO_LABEL_PLACAR_EXATO: Record<'exato' | 'resultado' | 'errou', { texto: string; cor: string }> = {
+  exato: { texto: '✓ Placar exato', cor: colors.accent },
+  resultado: { texto: '≈ Acertou o vencedor (não pontua neste grupo)', cor: colors.textMuted },
+  errou: { texto: '✗ Errou', cor: colors.danger },
+};
+
+function labelsParaModo(tipo?: ScoringType) {
+  return tipo === 'placar_exato' ? AVALIACAO_LABEL_PLACAR_EXATO : AVALIACAO_LABEL;
+}
+
 export default function RoundByNumberScreen() {
   const { groupId, numero } = useLocalSearchParams<{ groupId: string; numero: string }>();
   const numeroAtual = Number(numero);
@@ -59,6 +72,14 @@ export default function RoundByNumberScreen() {
     queryFn: () => getMyPredictions(round!.id),
     enabled: !!round?.id,
   });
+
+  const { data: group } = useQuery({
+    queryKey: ['group', groupId],
+    queryFn: () => getGroup(groupId),
+    enabled: !!groupId,
+  });
+
+  const avaliacaoLabel = labelsParaModo(group?.scoringConfig.tipo);
 
   function irPara(novaRodada: number) {
     if (novaRodada < 1) return;
@@ -122,8 +143,8 @@ export default function RoundByNumberScreen() {
                     Seu palpite: {meuPalpite.placarCasaPalpite} x {meuPalpite.placarForaPalpite}
                   </Text>
                   {avaliacao && (
-                    <Text style={{ color: AVALIACAO_LABEL[avaliacao].cor, fontSize: 13, fontWeight: '600' }}>
-                      {AVALIACAO_LABEL[avaliacao].texto}
+                    <Text style={{ color: avaliacaoLabel[avaliacao].cor, fontSize: 13, fontWeight: '600' }}>
+                      {avaliacaoLabel[avaliacao].texto}
                     </Text>
                   )}
                 </View>
