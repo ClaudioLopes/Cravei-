@@ -43,6 +43,14 @@ function mapStatus(status: SourceMatch['status']): NormalizedMatchStatus {
 }
 
 function toNormalizedMatch(match: SourceMatch): NormalizedMatch {
+  const placarCasa = match.score.fullTime.home;
+  const placarFora = match.score.fullTime.away;
+  // A fonte às vezes atrasa a transição do campo "status" em relação ao placar de tempo integral
+  // já publicado — um placar final não-nulo é, por si só, prova de que o jogo encerrou, então
+  // isso tem prioridade sobre o texto de status (evita jogos presos como "agendado" já com
+  // resultado, o que também travava o cálculo de pontos, disparado só na transição p/ ENCERRADO).
+  const status = placarCasa !== null && placarFora !== null ? 'ENCERRADO' : mapStatus(match.status);
+
   return {
     externalId: String(match.id),
     roundNumber: match.matchday,
@@ -51,9 +59,9 @@ function toNormalizedMatch(match: SourceMatch): NormalizedMatch {
     crestCasa: match.homeTeam.crest ?? null,
     crestFora: match.awayTeam.crest ?? null,
     dataHora: new Date(match.utcDate),
-    status: mapStatus(match.status),
-    placarCasa: match.score.fullTime.home,
-    placarFora: match.score.fullTime.away,
+    status,
+    placarCasa,
+    placarFora,
   };
 }
 

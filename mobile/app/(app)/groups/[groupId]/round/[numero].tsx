@@ -44,11 +44,11 @@ const AVALIACAO_LABEL: Record<'exato' | 'resultado' | 'errou', { texto: string; 
   errou: { texto: '✗ Errou', cor: colors.danger },
 };
 
-// No modo "placar_exato", acertar só o vencedor não pontua — mostrar "Acertou o resultado" (com
-// cor de sucesso) nesse caso passaria a impressão errada de que rendeu pontos.
+// No modo "placar_exato", acertar só o vencedor não pontua — mostrar qualquer coisa diferente
+// de "Errou" passaria a impressão errada de que rendeu pontos, então trata igual a um erro.
 const AVALIACAO_LABEL_PLACAR_EXATO: Record<'exato' | 'resultado' | 'errou', { texto: string; cor: string }> = {
   exato: { texto: '✓ Placar exato', cor: colors.accent },
-  resultado: { texto: '≈ Acertou o vencedor (não pontua neste grupo)', cor: colors.textMuted },
+  resultado: { texto: '✗ Errou', cor: colors.danger },
   errou: { texto: '✗ Errou', cor: colors.danger },
 };
 
