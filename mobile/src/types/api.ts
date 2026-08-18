@@ -33,6 +33,8 @@ export interface Group {
   podioTamanho: number;
   criadoEm: string;
   meuPapel?: GroupPapel;
+  // true assim que o primeiro palpite de qualquer turno é enviado — a partir daí o grupo não pode mais ser editado
+  iniciado?: boolean;
 }
 
 export interface GroupMember {

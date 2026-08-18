@@ -41,6 +41,22 @@ export function updateScoringRule(groupId: string, config: ScoringConfig) {
   return api.patch<Group>(`/groups/${groupId}/scoring-rule`, config).then((r) => r.data);
 }
 
+export function updateGroup(
+  groupId: string,
+  data: {
+    nome?: string;
+    tipo?: 'PUBLICO' | 'PRIVADO';
+    scoringConfig?: ScoringConfig;
+    podioTamanho?: 1 | 3;
+  },
+) {
+  return api.patch<Group>(`/groups/${groupId}`, data).then((r) => r.data);
+}
+
+export function deleteGroup(groupId: string) {
+  return api.delete<{ success: boolean }>(`/groups/${groupId}`).then((r) => r.data);
+}
+
 export function getPredictionsStatus(groupId: string, roundId: string) {
   return api
     .get<PredictionStatusEntry[]>(`/groups/${groupId}/rounds/${roundId}/predictions-status`)

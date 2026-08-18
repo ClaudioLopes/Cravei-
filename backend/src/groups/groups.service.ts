@@ -8,6 +8,7 @@ import { randomBytes } from 'crypto';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateGroupDto } from './dto/create-group.dto';
+import { UpdateGroupDto } from './dto/update-group.dto';
 import { ScoringConfigDto } from './dto/scoring-config.dto';
 
 const DEFAULT_SCORING_CONFIG: ScoringConfigDto = { tipo: 'placar_exato' };
@@ -88,7 +89,8 @@ export class GroupsService {
     if (!group) {
       throw new NotFoundException('Grupo não encontrado.');
     }
-    return group;
+    const iniciado = await this.hasStarted(groupId);
+    return { ...group, iniciado };
   }
 
   async members(userId: string, groupId: string) {
@@ -159,6 +161,57 @@ export class GroupsService {
         };
       }),
     );
+  }
+
+  async update(userId: string, groupId: string, dto: UpdateGroupDto) {
+    await this.assertOwner(userId, groupId);
+
+    if (await this.hasStarted(groupId)) {
+      throw new ConflictException(
+        'Este grupo já teve palpites ou turnos iniciados e não pode mais ser editado.',
+      );
+    }
+
+    return this.prisma.group.update({
+      where: { id: groupId },
+      data: {
+        ...(dto.nome !== undefined ? { nome: dto.nome } : {}),
+        ...(dto.tipo !== undefined ? { tipo: dto.tipo } : {}),
+        ...(dto.scoringConfig !== undefined
+          ? { scoringConfig: dto.scoringConfig as unknown as Prisma.InputJsonValue }
+          : {}),
+        ...(dto.podioTamanho !== undefined ? { podioTamanho: dto.podioTamanho } : {}),
+      },
+    });
+  }
+
+  async remove(userId: string, groupId: string) {
+    await this.assertOwner(userId, groupId);
+    await this.prisma.group.delete({ where: { id: groupId } });
+    return { success: true };
+  }
+
+  // "iniciado" = já existe pelo menos um turno travado (regra 5.2: a trava nasce do primeiro
+  // palpite enviado no grupo) — usado tanto para expor o estado à tela quanto para bloquear a edição
+  private async hasStarted(groupId: string): Promise<boolean> {
+    const lock = await this.prisma.groupTurnoLock.findFirst({
+      where: { groupId },
+      select: { id: true },
+    });
+    return !!lock;
+  }
+
+  private async assertOwner(userId: string, groupId: string) {
+    const group = await this.prisma.group.findUnique({ where: { id: groupId } });
+    if (!group) {
+      throw new NotFoundException('Grupo não encontrado.');
+    }
+    if (group.donoId !== userId) {
+      throw new ForbiddenException(
+        'Apenas o criador do grupo pode executar esta ação.',
+      );
+    }
+    return group;
   }
 
   private async assertMember(userId: string, groupId: string) {
