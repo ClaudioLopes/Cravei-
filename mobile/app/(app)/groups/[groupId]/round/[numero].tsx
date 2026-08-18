@@ -7,7 +7,7 @@ import { getGroup } from '../../../../../src/api/groups';
 import { Card, EmptyState, Screen, Subtitle, Title } from '../../../../../src/components/ui';
 import { colors } from '../../../../../src/theme/colors';
 import { formatDateTime } from '../../../../../src/lib/deadline';
-import { Match, Prediction, ScoringType } from '../../../../../src/types/api';
+import { Match, Prediction, ScoringConfig } from '../../../../../src/types/api';
 import { TeamCrest } from '../../../../../src/components/team-crest';
 
 const STATUS_LABEL: Record<Match['status'], string> = {
@@ -25,36 +25,57 @@ function resultadoDoJogo(casa: number, fora: number): Resultado {
   return 'EMPATE';
 }
 
-function avaliarPalpite(pred: Prediction, match: Match): 'exato' | 'resultado' | 'errou' | null {
-  // Só avalia jogos realmente encerrados — um placar não-nulo sozinho não basta (pode ser um
-  // valor parcial/desatualizado de um jogo ainda agendado ou em andamento).
-  if (match.status !== 'ENCERRADO') return null;
-  if (match.placarCasa === null || match.placarFora === null) return null;
+// Espelha backend/src/scoring/scoring-rules.ts (calcularPontos) — mesmos valores padrão e mesma
+// regra por tipo, para que a avaliação exibida aqui nunca desacompanhe o que o grupo realmente pontua.
+const PONTOS_PLACAR_EXATO_UNICO = 1;
+const PONTOS_CAMADAS_PLACAR_EXATO_PADRAO = 3;
+const PONTOS_RESULTADO_PADRAO = 1;
+
+function pontosDoPalpite(pred: Prediction, match: Match, config: ScoringConfig): number {
   const acertouExato =
     pred.placarCasaPalpite === match.placarCasa && pred.placarForaPalpite === match.placarFora;
-  if (acertouExato) return 'exato';
-  const resultadoReal = resultadoDoJogo(match.placarCasa, match.placarFora);
-  const resultadoPalpite = resultadoDoJogo(pred.placarCasaPalpite, pred.placarForaPalpite);
-  return resultadoReal === resultadoPalpite ? 'resultado' : 'errou';
+  const acertouResultado =
+    resultadoDoJogo(pred.placarCasaPalpite, pred.placarForaPalpite) ===
+    resultadoDoJogo(match.placarCasa!, match.placarFora!);
+
+  switch (config.tipo) {
+    case 'placar_exato':
+      return acertouExato ? PONTOS_PLACAR_EXATO_UNICO : 0;
+    case 'resultado_simples':
+      return acertouResultado ? PONTOS_RESULTADO_PADRAO : 0;
+    case 'camadas':
+      if (acertouExato) return config.pontosPlacarExato ?? PONTOS_CAMADAS_PLACAR_EXATO_PADRAO;
+      if (acertouResultado) return config.pontosResultado ?? PONTOS_RESULTADO_PADRAO;
+      return 0;
+    default:
+      return 0;
+  }
+}
+
+// Retorna null enquanto não dá pra avaliar (jogo não encerrado, ou regra do grupo ainda não carregou) —
+// evita mostrar um rótulo genérico incorreto antes da regra do grupo estar disponível.
+function avaliarPalpite(
+  pred: Prediction,
+  match: Match,
+  config?: ScoringConfig,
+): 'exato' | 'resultado' | 'errou' | null {
+  if (!config) return null;
+  if (match.status !== 'ENCERRADO') return null;
+  if (match.placarCasa === null || match.placarFora === null) return null;
+
+  const pontos = pontosDoPalpite(pred, match, config);
+  if (pontos <= 0) return 'errou';
+
+  const acertouExato =
+    pred.placarCasaPalpite === match.placarCasa && pred.placarForaPalpite === match.placarFora;
+  return acertouExato ? 'exato' : 'resultado';
 }
 
 const AVALIACAO_LABEL: Record<'exato' | 'resultado' | 'errou', { texto: string; cor: string }> = {
   exato: { texto: '✓ Placar exato', cor: colors.accent },
-  resultado: { texto: '≈ Acertou o resultado', cor: colors.accentAlt },
+  resultado: { texto: '✓ Acertou o resultado', cor: colors.accentAlt },
   errou: { texto: '✗ Errou', cor: colors.danger },
 };
-
-// No modo "placar_exato", acertar só o vencedor não pontua — mostrar qualquer coisa diferente
-// de "Errou" passaria a impressão errada de que rendeu pontos, então trata igual a um erro.
-const AVALIACAO_LABEL_PLACAR_EXATO: Record<'exato' | 'resultado' | 'errou', { texto: string; cor: string }> = {
-  exato: { texto: '✓ Placar exato', cor: colors.accent },
-  resultado: { texto: '✗ Errou', cor: colors.danger },
-  errou: { texto: '✗ Errou', cor: colors.danger },
-};
-
-function labelsParaModo(tipo?: ScoringType) {
-  return tipo === 'placar_exato' ? AVALIACAO_LABEL_PLACAR_EXATO : AVALIACAO_LABEL;
-}
 
 export default function RoundByNumberScreen() {
   const { groupId, numero } = useLocalSearchParams<{ groupId: string; numero: string }>();
@@ -78,8 +99,6 @@ export default function RoundByNumberScreen() {
     queryFn: () => getGroup(groupId),
     enabled: !!groupId,
   });
-
-  const avaliacaoLabel = labelsParaModo(group?.scoringConfig.tipo);
 
   function irPara(novaRodada: number) {
     if (novaRodada < 1) return;
@@ -116,7 +135,7 @@ export default function RoundByNumberScreen() {
         contentContainerStyle={{ gap: 8, paddingVertical: 12 }}
         renderItem={({ item }: { item: Match }) => {
           const meuPalpite = minhasPredicoes?.find((p: Prediction) => p.matchId === item.id);
-          const avaliacao = meuPalpite ? avaliarPalpite(meuPalpite, item) : null;
+          const avaliacao = meuPalpite ? avaliarPalpite(meuPalpite, item, group?.scoringConfig) : null;
 
           return (
             <Card>
@@ -143,8 +162,8 @@ export default function RoundByNumberScreen() {
                     Seu palpite: {meuPalpite.placarCasaPalpite} x {meuPalpite.placarForaPalpite}
                   </Text>
                   {avaliacao && (
-                    <Text style={{ color: avaliacaoLabel[avaliacao].cor, fontSize: 13, fontWeight: '600' }}>
-                      {avaliacaoLabel[avaliacao].texto}
+                    <Text style={{ color: AVALIACAO_LABEL[avaliacao].cor, fontSize: 13, fontWeight: '600' }}>
+                      {AVALIACAO_LABEL[avaliacao].texto}
                     </Text>
                   )}
                 </View>
